@@ -248,38 +248,38 @@ def create_venue_form():
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
+  data = VenueForm(request.form, meta={'csrf': False})
 
-  data = VenueForm(request.form)
-  name = data['name']
-  city = data['city']
-  state = data['state']
-  address = data['address']
-  phone = data['phone']
-  genres = data['genres']
-  facebook_link = data['facebook_link']
-  image_link = data['image_link']
-  website_link = data['website_link']
-  seeking_talent = data['seeking_talent']
-  seeking_description = data['seeking_description']
-  venue = Venue(name = name,city = city, state = state, address=address, phone=phone, genre=genres, facebook_link=facebook_link, image_link=image_link, website_link=website_link, seeking_talent=seeking_talent, seeking_description=seeking_description)
-
-  try:
-
-    db.session.add(venue)
-    db.session.commit()
-    # on successful db insert, flash success
-    flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  except:
+  if data.validate():
+    try:
+      name = data['name']
+      city = data['city']
+      state = data['state']
+      address = data['address']
+      phone = data['phone']
+      genres = data['genres']
+      facebook_link = data['facebook_link']
+      image_link = data['image_link']
+      website_link = data['website_link']
+      seeking_talent = data['seeking_talent']
+      seeking_description = data['seeking_description']
+      venue = Venue(name = name,city = city, state = state, address=address, phone=phone, genre=genres, facebook_link=facebook_link, image_link=image_link, website_link=website_link, seeking_talent=seeking_talent, seeking_description=seeking_description)
+      with app.app_context():
+        db.session.add(venue)
+        db.session.commit()
+      # on successful db insert, flash success
+      flash('Venue ' + request.form['name'] + ' was successfully listed!')
+    except:
     #  on unsuccessful db insert, flash an error instead.
     # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-    flash('Venue ' + request.form['name'] + ' was NOT successfully listed!')
-    db.session.rollback()
-    error = True
-    print(sys.exc_info())
-  finally:
-    db.session.close()
-  return render_template('pages/home.html')
+      flash('Venue ' + request.form['name'] + ' was NOT successfully listed!')
+      db.session.rollback()
+      
+      
+    finally:
+      db.session.close()
+    return render_template('pages/home.html')
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
@@ -467,32 +467,38 @@ def create_artist_submission():
   # called upon submitting the new artist listing form
   #  insert form data as a new Venue record in the db, instead
   #  modify data to be the data object returned from db insertion
-  error = False
-  data = request.get_json()
-  name = data['name']
-  city = data['city']
-  state = data['state']
-  phone = data['phone']
-  genres = data['genres']
-  image_link = data['image_link']
-  facebook_link = data['facebook_link']
-  website_link = data['website_link']
-  seeking_venue = data['seeking_venue']
-  seeking_description = data['seeking_description']
-  artist = Artist(name = name,city = city, state=state, phone=phone, genres=genres, image_link = image_link, facebook_link=facebook_link, website_link = website_link, seeking_venue = seeking_venue, seeking_description = seeking_description)
-  try:
+  # Set the FlaskForm
+  data = ArtistForm(request.form, meta={'csrf': False})
+  # Validate all fields
+  if data.validate():
+    try:
+      error = False
+      data = request.get_json()
+      name = data['name']
+      city = data['city']
+      state = data['state']
+      phone = data['phone']
+      genres = data['genres']
+      image_link = data['image_link']
+      facebook_link = data['facebook_link']
+      website_link = data['website_link']
+      seeking_venue = data['seeking_venue']
+      seeking_description = data['seeking_description']
+      artist = Artist(name = name,city = city, state=state, phone=phone, genres=genres, image_link = image_link, facebook_link=facebook_link, website_link = website_link, seeking_venue = seeking_venue, seeking_description = seeking_description)
+  
     # TODO: on unsuccessful db insert, flash an error instead.
     # on successful db insert, flash success
-    db.session.add(artist)
-    db.session.commit()
-    flash('Artist ' + request.form['name'] + ' was successfully listed!')
-  except:
-    flash('Artist ' + request.form['name'] + ' was NOT successfully listed!')
-    error = True
-    db.session.rolleback()
-    print(sys.exc_info())
-  finally:
-    db.session.close()
+      with app.app_context():
+        db.session.add(artist)
+        db.session.commit()
+      flash('Artist ' + request.form['name'] + ' was successfully listed!')
+    except:
+      flash('Artist ' + request.form['name'] + ' was NOT successfully listed!')
+      error = True
+      db.session.rolleback()
+      
+    finally:
+      db.session.close()
 
 
   return render_template('pages/home.html')
@@ -553,24 +559,28 @@ def create_shows():
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
   # TODO: insert form data as a new Show record in the db, instead
-  data = request.get_json()
-  start_time = data['start_time']
-  artist_id =data['start_id']
-  venue_id = data['venue_id']
-  show = Show(start_time=start_time,artist_id=artist_id, venue_id=venue_id)
-    
-  try:
-    db.session.add(show)
-    db.session.commit()
-    # on successful db insert, flash success
-  # TODO: on unsuccessful db insert, flash an error instead.
-    flash('Show was successfully listed!')
-  except:
-    db.session.rolleback()
-    flash('Show was Not successfully listed!')
-  finally:
-    db.session.close()
-  return render_template('pages/home.html')
+  # Set the FlaskForm
+  data = VenueForm(request.form)
+  # Validate all fields
+  if data.validate():
+    try:
+      
+      start_time = data['start_time']
+      artist_id =data['start_id']
+      venue_id = data['venue_id']
+      show = Show(start_time=start_time,artist_id=artist_id, venue_id=venue_id)
+      with app.app_context():
+        db.session.add(show)
+        db.session.commit()
+        # on successful db insert, flash success
+      # TODO: on unsuccessful db insert, flash an error instead.
+      flash('Show was successfully listed!')
+    except:
+      db.session.rolleback()
+      flash('Show was Not successfully listed!')
+    finally:
+      db.session.close()
+    return render_template('pages/home.html')
 
 @app.errorhandler(404)
 def not_found_error(error):
