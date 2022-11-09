@@ -77,7 +77,7 @@ class Show(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   start_time = db.Column(db.DateTime)
   artist_id = db.Column(db.Integer,db.ForeignKey('Artist.id'))
-  venue_id = db.Column(db.String(120),db.ForeignKey('Venue.id'))
+  venue_id = db.Column(db.Integer,db.ForeignKey('Venue.id'))
   
   #ralation:
   artist = db.relation('Artist',backref = 'show', lazy="joined")
@@ -473,7 +473,7 @@ def create_artist_submission():
   if data.validate():
     try:
       error = False
-      data = request.get_json()
+      
       name = data['name']
       city = data['city']
       state = data['state']
