@@ -28,60 +28,63 @@ db = SQLAlchemy(app)
 #----------------------------------------------------------------------------#
 
 class Venue(db.Model):
-    __tablename__ = 'Venue'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    genres = db.Column(db.String(120))
-    facebook_link = db.Column(db.String(120))
-    website_link = db.Column(db.String(120))
-    seeking_talent = db.Column(db.Boolean)
-    seeking_description = db.Column(db.String(120))
-    show = db.relationship('Show',backref='vanue',lazy ='False')
-    def __repr__(self):
-      return f'<Venue :{self.id},name:{self.name},city:{self.city},state:{self.state},address:{self.address},phone: {self.phone},genres: {self.genres},image_link: {self.image_link},genre:{self.genres},facebook_link:{self.facebook_link},website_link: {self.website_link},seeking_venue:{self.seeking_venue},seeking_description:{self.seeking_description}>'
 
-    facebook_link = db.Column(db.String(120))
+  __tablename__ = 'venue'
 
+  id = db.Column(db.Integer, primary_key=True)
+  name = db.Column(db.String(), nullable=False)
+  city = db.Column(db.String(120), nullable=False)
+  state = db.Column(db.String(120),nullable=False)
+  address = db.Column(db.String(120),nullable=False)
+  phone = db.Column(db.String(120), nullable=False)
+  genres = db.Column(db.String(300), nullable=False)
+  image_link = db.Column(db.String(500))
+  facebook_link = db.Column(db.String(120))
+  website = db.Column(db.String(120), nullable=False)
+  seeking_talent=db.Column(db.Boolean()) 
+  seeking_description=db.Column(db.String(120),nullable = True)
+  shows = db.relationship('Show', backref='venue', lazy=False)
+  
+  def __repr__(self):
+    return f'<Venue: {self.id}, name: {self.name}, city: {self.city}, state: {self.state}, address: {self.address}, phone: {self.phone}, image_link: {self.image_link}, facebook_link: {self.facebook_link}, genres: {self.genres}, website: {self.website}, shows: {self.shows}>'
+  
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
-    __tablename__ = 'Artist'
+  __tablename__ = 'artist'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    website_link = db.Column(db.String(120))
-    seeking_venue = db.Column(db.Boolean)
-    seeking_description = db.Column(db.String(120))
-    show = db.relationship('Show',backref='artist',lazy = 'False')
-    def __repr__(self):
-      return f'<Artist :{self.id},name:{self.name},city:{self.city},state:{self.state},phone: {self.phone},genres: {self.genres},image_link: {self.image_link},facebook_link:{self.facebook_link},website_link: {self.website_link},seeking_venue:{self.seeking_venue},seeking_description:{self.seeking_description}>'
+  id = db.Column(db.Integer, primary_key=True)
+  name = db.Column(db.String(), nullable=False)
+  city = db.Column(db.String(120), nullable=False)
+  state = db.Column(db.String(120), nullable=False)
+  phone = db.Column(db.String(120), nullable=False)
+  genres = db.Column(db.String(300), nullable=False)
+  image_link = db.Column(db.String(500))
+  facebook_link = db.Column(db.String(120))
+  website = db.Column(db.String(120))
+  shows = db.relationship('Show', backref='artist', lazy=False)
 
-
-
+  def __repr__(self):
+    return f'<Artist: {self.id}, name: {self.name}, city: {self.city}, state: {self.state}, phone: {self.phone}, genres: {self.genres}, image_link: {self.image_link}, facebook_link: {self.facebook_link}, shows: {self.shows}>'
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 
+
 class Show(db.Model):
+  i_tablename__ = 'show'
+
   id = db.Column(db.Integer, primary_key=True)
-  start_time = db.Column(db.DateTime)
-  artist_id = db.Column(db.Integer,db.ForeignKey('Artist.id'))
-  venue_id = db.Column(db.Integer,db.ForeignKey('Venue.id'))
-  
+  date = db.Column(db.DateTime, nullable=False)
+  artist_id = db.Column(db.Integer, db.ForeignKey("artist.id"), nullable=False)
+  venue_id = db.Column(db.Integer, db.ForeignKey("venue.id"), nullable=False)
+
+  def __repr__(self):
+    return f'<Show {self.id}, date: {self.date}, artist_id: {self.artist_id}, venue_id: {self.venue_id}>'
+
   #ralation:
-  artist = db.relation('Artist',backref = 'show', lazy="joined")
-  vanue = db.relation('Vanue',backref='show', lazy="joined")
+  # artist = db.relation('Artist',backref = 'shows', lazy="joined")
+  # vanue = db.relation('Venue',backref='shows', lazy="joined")
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 
 #----------------------------------------------------------------------------#
@@ -262,7 +265,7 @@ def create_venue_submission():
       website_link = form.website_link.data,
       seeking_talent = form.seeking_description.data,
       seeking_description = form.seeking_description.data
-      venue = Venue(name = name,city = city, state = state, address=address, phone=phone, genre=genres, facebook_link=facebook_link, image_link=image_link, website_link=website_link, seeking_talent=seeking_talent, seeking_description=seeking_description)
+      venue = Venue(name = name,city = city, state = state, address=address, phone=phone, genres=genres, facebook_link=facebook_link, image_link=image_link, website=website_link, seeking_talent=seeking_talent, seeking_description=seeking_description)
       with app.app_context():
         db.session.add(venue)
         db.session.commit()
