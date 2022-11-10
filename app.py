@@ -42,7 +42,7 @@ class Venue(db.Model):
     website_link = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(120))
-    Shows = db.relationship('show',backref='vanue',lazy ='False')
+    show = db.relationship('Show',backref='vanue',lazy ='False')
     def __repr__(self):
       return f'<Venue :{self.id},name:{self.name},city:{self.city},state:{self.state},address:{self.address},phone: {self.phone},genres: {self.genres},image_link: {self.image_link},genre:{self.genres},facebook_link:{self.facebook_link},website_link: {self.website_link},seeking_venue:{self.seeking_venue},seeking_description:{self.seeking_description}>'
 
@@ -64,7 +64,7 @@ class Artist(db.Model):
     website_link = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(120))
-    show = db.relationship('show',backref='artist',lazy = 'False')
+    show = db.relationship('Show',backref='artist',lazy = 'False')
     def __repr__(self):
       return f'<Artist :{self.id},name:{self.name},city:{self.city},state:{self.state},phone: {self.phone},genres: {self.genres},image_link: {self.image_link},facebook_link:{self.facebook_link},website_link: {self.website_link},seeking_venue:{self.seeking_venue},seeking_description:{self.seeking_description}>'
 
@@ -248,39 +248,41 @@ def create_venue_form():
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
-  data = VenueForm(request.form, meta={'csrf': False})
-
-  if data.validate():
+  form = VenueForm(request.form, meta={'csrf': False})
+  if form.validate():
     try:
-      name = data['name']
-      city = data['city']
-      state = data['state']
-      address = data['address']
-      phone = data['phone']
-      genres = data['genres']
-      facebook_link = data['facebook_link']
-      image_link = data['image_link']
-      website_link = data['website_link']
-      seeking_talent = data['seeking_talent']
-      seeking_description = data['seeking_description']
+      name = form.name.data,
+      city = form.city.data,
+      state = form.state.data,
+      address = form.address.data
+      phone = form.phone.data,
+      genres = form.genres.data,
+      facebook_link = form.facebook_link.data,
+      image_link = form.image_link.data,
+      website_link = form.website_link.data,
+      seeking_talent = form.seeking_description.data,
+      seeking_description = form.seeking_description.data
       venue = Venue(name = name,city = city, state = state, address=address, phone=phone, genre=genres, facebook_link=facebook_link, image_link=image_link, website_link=website_link, seeking_talent=seeking_talent, seeking_description=seeking_description)
       with app.app_context():
         db.session.add(venue)
         db.session.commit()
       # on successful db insert, flash success
       flash('Venue ' + request.form['name'] + ' was successfully listed!')
-    except:
+    except ValueError as e:
+      print(e)
+
+  else:
     #  on unsuccessful db insert, flash an error instead.
     # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-      flash('Venue ' + request.form['name'] + ' was NOT successfully listed!')
-      db.session.rollback()
-      
-      
-    finally:
-      db.session.close()
-    return render_template('pages/home.html')
-
+    message = []
+    for field, err in form.errors.items():
+      message.append(field + ' ' + '|'.join(err))
+    flash('Errors ' + str(message))
+    form = VenueForm()
+    return render_template('forms/new_venue.html', form=form)
+  return render_template('pages/home.html')   
+    
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
@@ -473,7 +475,7 @@ def create_artist_submission():
   if data.validate():
     try:
       error = False
-      
+      data = request.get_json()
       name = data['name']
       city = data['city']
       state = data['state']
